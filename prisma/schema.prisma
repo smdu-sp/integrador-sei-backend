@@ -38,6 +38,7 @@ model Sistema {
   nome           String         @unique
   identificacao  String         @unique
   sigla          String         @unique
+  status         Boolean        @default(true)
 
   criado_em      DateTime       @default(now())
   alterado_em    DateTime       @default(now()) @updatedAt
@@ -46,13 +47,15 @@ model Sistema {
   usuario        Usuario        @relation(fields: [usuario_id], references: [id])
 
   requisicoes    Requisicao[]
+  token          Token?
 
   @@map("sistemas")
 }
 
 model Requisicao {
   id             String         @id @default(uuid())
-  descricao      String
+  servico        String
+  requisicao     String         @db.Text
 
   criado_em      DateTime       @default(now())
   alterado_em    DateTime       @default(now()) @updatedAt
@@ -61,4 +64,16 @@ model Requisicao {
   sistema        Sistema        @relation(fields: [sistema_id], references: [id])
 
   @@map("requisicoes")
+}
+
+model Token {
+  sistema_id     String         @unique
+  token          String         @db.Text
+  
+  criado_em      DateTime       @default(now())
+  alterado_em    DateTime       @default(now()) @updatedAt
+
+  sistema        Sistema        @relation(fields: [sistema_id], references: [id])
+
+  @@map("tokens")
 }

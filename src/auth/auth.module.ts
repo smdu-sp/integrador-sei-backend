@@ -7,12 +7,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ValidarLoginMiddleware } from './middlewares/validar-login.middleware';
 import { RtStrategy } from './strategies/rt.strategy';
+import { SistemaJwtStrategy } from './strategies/sistema-jwt.strategy';
+import { SistemasModule } from 'src/sistemas/sistemas.module';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RtStrategy, SistemaJwtStrategy],
   imports: [
     UsuariosModule,
+    SistemasModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {

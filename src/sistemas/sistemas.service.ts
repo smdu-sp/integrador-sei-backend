@@ -1,16 +1,37 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Global, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateSistemaDto } from './dto/create-sistema.dto';
 import { UpdateSistemaDto } from './dto/update-sistema.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
-import { Usuario } from '@prisma/client';
+import { Usuario, $Enums } from '@prisma/client';
+import { SistemaPayload } from 'src/auth/models/SistemaPayload';
+import { JwtService } from '@nestjs/jwt';
 
+@Global()
 @Injectable()
 export class SistemasService {
   constructor(
     private prisma: PrismaService,
     private app: AppService,
+    private readonly jwtService: JwtService,
   ) {}
+
+  async gerarTokenSistema(sistema_id: string) {
+    const sistema = await this.prisma.sistema.findUnique({ where: { id: sistema_id } });
+    if (!sistema) throw new BadRequestException('Sistema não encontrado.');
+    const { id, nome, sigla, identificacao } = sistema;
+    const payload: SistemaPayload = {
+      sub: id,
+      nome,
+      sigla,
+      identificacao
+    };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+    });
+    await this.prisma.token.create({ data: { sistema_id, token } });
+    return { token_sistema: token };
+  }
 
   async criar(createSistemaDto: CreateSistemaDto, usuario: Usuario) {
     const { nome, sigla, identificacao } = createSistemaDto;
@@ -19,9 +40,7 @@ export class SistemasService {
       if (!nome || nome === '') faltantes.push('Nome');
       if (!sigla || sigla === '') faltantes.push('Sigla');
       if (!identificacao || identificacao === '') faltantes.push('Identificação');
-      throw new BadRequestException(
-        `Por favor, preencha todos os campos obrigatórios: ${faltantes.join(', ')}`,
-      );
+      throw new BadRequestException(`Por favor, preencha todos os campos obrigatórios: ${faltantes.join(', ')}`);
     }
     const usuarioVerificado = await this.prisma.usuario.findUnique({ where: { id: usuario.id } });
     if (!usuarioVerificado) throw new BadRequestException('Usuário não encontrado.');
@@ -35,7 +54,8 @@ export class SistemasService {
     if (verificaIdentificacao) throw new BadRequestException('Não foi possivel cadastrar o sistema, procure a equipe de desenvolvimento.');
     const sistema = await this.prisma.sistema.create({ data: { ...createSistemaDto, usuario_id: usuario.id } });
     if (!sistema) throw new InternalServerErrorException('Não foi possivel cadastrar o sistema. Tente novamente.');
-    return sistema;
+    const { token_sistema } = await this.gerarTokenSistema(sistema.id);
+    return { sistema, token_sistema };
   }
 
   async buscarTudo(
@@ -76,14 +96,51 @@ export class SistemasService {
   }
 
   async buscarPorId(id: string) {
-    return `This action returns a #${id} sistema`;
+    if (!id || id === '') throw new BadRequestException('Por favor, informe o id do sistema que deseja buscar.');
+    const sistema = await this.prisma.sistema.findUnique({ where: { id } });
+    if (!sistema) throw new BadRequestException('Sistema não encontrado.');
+    return sistema;
   }
 
-  async atualizar(id: string, updateSistemaDto: UpdateSistemaDto) {
-    return `This action updates a #${id} sistema`;
+  async atualizar(id: string, updateSistemaDto: UpdateSistemaDto, usuario: Usuario) {
+    if (!id || id === '') throw new BadRequestException('Por favor, informe o id do sistema que deseja atualizar.');
+    const { nome, sigla, identificacao } = updateSistemaDto;
+    if ((nome && nome === '') || (sigla && sigla === '') || (identificacao && identificacao === '')){
+      const faltantes = [];
+      if (nome && nome === '') faltantes.push('Nome');
+      if (sigla && sigla === '') faltantes.push('Sigla');
+      if (identificacao && identificacao === '') faltantes.push('Identificação');
+      throw new BadRequestException(`Por favor, não deixe nenhum campo enviado vazio: ${faltantes.join(', ')}`);
+    }
+    const usuarioVerificado = await this.prisma.usuario.findUnique({ where: { id: usuario.id } });
+    if (!usuarioVerificado) throw new BadRequestException('Usuário não encontrado.');
+    if (usuarioVerificado.status !== 1) throw new BadRequestException('Usuário inativo.');
+    if (usuarioVerificado.permissao === 'USR') throw new BadRequestException('Usuário sem permissão.');
+    if (nome) {
+      const verificaNome = await this.prisma.sistema.findUnique({ where: { nome } });
+      if (verificaNome && verificaNome.id !== id) throw new BadRequestException('Sistema com esse nome já cadastrado.');
+    }
+    if (sigla) {
+      const verificaSigla = await this.prisma.sistema.findUnique({ where: { sigla } });
+      if (verificaSigla && verificaSigla.id !== id) throw new BadRequestException('Sistema com essa sigla já cadastrada.');
+    }
+    if (identificacao) {
+      const verificaIdentificacao = await this.prisma.sistema.findUnique({ where: { identificacao } });
+      if (verificaIdentificacao && verificaIdentificacao.id !== id) throw new BadRequestException('Não foi possivel cadastrar o sistema, procure a equipe de desenvolvimento.');
+    }
+    const sistema = await this.prisma.sistema.update({
+      data: updateSistemaDto,
+      where: { id },
+    });
+    if (!sistema) throw new InternalServerErrorException('Não foi possivel cadastrar o sistema. Tente novamente.');
   }
 
   async desativar(id: string) {
-    return `This action removes a #${id} sistema`;
+    if (!id || id === '') throw new BadRequestException('Por favor, informe o id do sistema que deseja desativar.');
+    const sistema = await this.prisma.sistema.update({
+      data: { status: false },
+      where: { id },
+    });
+    if (!sistema) throw new InternalServerErrorException('Não foi possivel desativar o sistema. Tente novamente.');
   }
 }

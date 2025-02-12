@@ -11,6 +11,7 @@ import { VitalidadeModule } from './vitalidade/vitalidade.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProcedimentosModule } from './procedimentos/procedimentos.module';
 import { SistemasModule } from './sistemas/sistemas.module';
+import { SistemaJwtAuthGuard } from './auth/guards/sistema-jwt-auth.guard';
 
 @Global()
 @Module({
@@ -35,7 +36,7 @@ import { SistemasModule } from './sistemas/sistemas.module';
     {
       provide: APP_GUARD,
       useClass: RoleGuard,
-    },
+    }
   ],
   exports: [AppService],
 })

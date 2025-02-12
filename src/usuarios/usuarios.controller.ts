@@ -26,7 +26,6 @@ export class UsuariosController {
   @Permissoes('ADM')
   @Post('criar') //localhost:3000/usuarios/criar
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   criar(
     @UsuarioAtual() usuario: Usuario,
     @Body() createUsuarioDto: CreateUsuarioDto,
@@ -37,7 +36,6 @@ export class UsuariosController {
   @Permissoes('ADM')
   @Get('buscar-tudo') //localhost:3000/usuarios/buscar-tudo
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   buscarTudo(
     @UsuarioAtual() usuario: Usuario,
     @Query('pagina') pagina?: string,
@@ -59,7 +57,6 @@ export class UsuariosController {
   @Permissoes('ADM')
   @Get('buscar-por-id/:id') //localhost:3000/usuarios/buscar-por-id/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   buscarPorId(@Param('id') id: string) {
     return this.usuariosService.buscarPorId(id);
   }
@@ -67,7 +64,6 @@ export class UsuariosController {
   @Permissoes('ADM', 'USR')
   @Patch('atualizar/:id') //localhost:3000/usuarios/atualizar/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   atualizar(
     @UsuarioAtual() usuario: Usuario,
     @Param('id') id: string,
@@ -79,7 +75,6 @@ export class UsuariosController {
   @Permissoes('ADM', 'DEV')
   @Get('lista-completa') //localhost:3000/usuarios/lista-completa
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   listaCompleta() {
     return this.usuariosService.listaCompleta();
   }
@@ -87,14 +82,12 @@ export class UsuariosController {
   @Permissoes('ADM')
   @Delete('desativar/:id') //localhost:3000/usuarios/excluir/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   excluir(@Param('id') id: string) {
     return this.usuariosService.excluir(id);
   }
 
   @Permissoes('ADM')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Patch('autorizar/:id')
   autorizarUsuario(@Param('id') id: string) {
     return this.usuariosService.autorizaUsuario(id);
@@ -102,14 +95,12 @@ export class UsuariosController {
 
   @Get('valida-usuario')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   validaUsuario(@UsuarioAtual() usuario: Usuario) {
     return this.usuariosService.validaUsuario(usuario.id);
   }
 
   @Permissoes('ADM')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('buscar-novo')
   buscarNovo(@Query('login') login: string) {
     return this.usuariosService.buscarNovo(login);

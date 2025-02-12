@@ -4,7 +4,6 @@ import { CreateSistemaDto } from './dto/create-sistema.dto';
 import { UpdateSistemaDto } from './dto/update-sistema.dto';
 import { Permissoes } from 'src/auth/decorators/permissoes.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Usuario } from '@prisma/client';
 import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
 
@@ -15,8 +14,8 @@ export class SistemasController {
   @Permissoes('ADM')
   @Post('criar')
   criar(
-    @UsuarioAtual() usuario: Usuario,
-    @Body() createSistemaDto: CreateSistemaDto
+    @Body() createSistemaDto: CreateSistemaDto,
+    @UsuarioAtual() usuario: Usuario
   ) {
     return this.sistemasService.criar(createSistemaDto, usuario);
   }
@@ -42,8 +41,12 @@ export class SistemasController {
   }
 
   @Patch('atualizar/:id')
-  atualizar(@Param('id') id: string, @Body() updateSistemaDto: UpdateSistemaDto) {
-    return this.sistemasService.atualizar(id, updateSistemaDto);
+  atualizar(
+    @Param('id') id: string,
+    @Body() updateSistemaDto: UpdateSistemaDto,
+    @UsuarioAtual() usuario: Usuario
+  ) {
+    return this.sistemasService.atualizar(id, updateSistemaDto, usuario);
   }
 
   @Delete('desativar/:id')
