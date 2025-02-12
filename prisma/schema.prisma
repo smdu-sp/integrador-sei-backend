@@ -6,13 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 enum Permissao {
   DEV
-  SUP
   ADM
   USR
 }
@@ -29,5 +28,37 @@ model Usuario {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @default(now()) @updatedAt
 
+  sistemas     Sistema[]
+
   @@map("usuarios")
+}
+
+model Sistema {
+  id             String         @id @default(uuid())
+  nome           String         @unique
+  identificacao  String         @unique
+  sigla          String         @unique
+
+  criado_em      DateTime       @default(now())
+  alterado_em    DateTime       @default(now()) @updatedAt
+
+  usuario_id     String
+  usuario        Usuario        @relation(fields: [usuario_id], references: [id])
+
+  requisicoes    Requisicao[]
+
+  @@map("sistemas")
+}
+
+model Requisicao {
+  id             String         @id @default(uuid())
+  descricao      String
+
+  criado_em      DateTime       @default(now())
+  alterado_em    DateTime       @default(now()) @updatedAt
+
+  sistema_id     String
+  sistema        Sistema        @relation(fields: [sistema_id], references: [id])
+
+  @@map("requisicoes")
 }

@@ -7,9 +7,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RoleGuard } from './auth/guards/role.guard';
 import { PrismaModule } from './prisma/prisma.module';
-import { Prisma2Module } from './prisma2/prisma2.module';
 import { VitalidadeModule } from './vitalidade/vitalidade.module';
 import { ConfigModule } from '@nestjs/config';
+import { ProcedimentosModule } from './procedimentos/procedimentos.module';
+import { SistemasModule } from './sistemas/sistemas.module';
 
 @Global()
 @Module({
@@ -17,11 +18,12 @@ import { ConfigModule } from '@nestjs/config';
     UsuariosModule,
     AuthModule,
     PrismaModule,
-    Prisma2Module,
     VitalidadeModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ProcedimentosModule,
+    SistemasModule,
   ],
   controllers: [AppController],
   providers: [

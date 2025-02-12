@@ -8,9 +8,9 @@ import {
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SGUService } from 'src/prisma/sgu.service';
 import { $Enums, Usuario } from '@prisma/client';
 import { AppService } from 'src/app.service';
-import { Prisma2Service } from 'src/prisma2/prisma2.service';
 import { Client, createClient } from 'ldapjs';
 
 @Global()
@@ -18,7 +18,7 @@ import { Client, createClient } from 'ldapjs';
 export class UsuariosService {
   constructor(
     private prisma: PrismaService,
-    private prisma2: Prisma2Service,
+    private sgu: SGUService,
     private app: AppService,
   ) {}
 
@@ -51,15 +51,15 @@ export class UsuariosService {
   ) {
     if (
       permissao === $Enums.Permissao.DEV &&
-      permissaoCriador === $Enums.Permissao.SUP
-    )
-      permissao = $Enums.Permissao.SUP;
-    if (
-      (permissao === $Enums.Permissao.DEV ||
-        permissao === $Enums.Permissao.SUP) &&
       permissaoCriador === $Enums.Permissao.ADM
     )
       permissao = $Enums.Permissao.ADM;
+    if (
+      (permissao === $Enums.Permissao.DEV ||
+        permissao === $Enums.Permissao.ADM) &&
+      permissaoCriador === $Enums.Permissao.USR
+    )
+      permissao = $Enums.Permissao.USR;
     return permissao;
   }
 

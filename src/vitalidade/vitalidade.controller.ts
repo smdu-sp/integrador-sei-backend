@@ -24,7 +24,7 @@ export class VitalidadeController {
     private memory: MemoryHealthIndicator,
   ) {}
 
-  @Permissoes('ADM', 'SUP', 'DEV')
+  @Permissoes('ADM')
   @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -35,13 +35,13 @@ export class VitalidadeController {
         this.http.pingCheck(
           'sispeuc-frontend',
           `${process.env.HEALTHCHECK_FRONTEND_URL}`,
-        ), // Monitorar front-end: Há/Não há conexão
+        ),
       () =>
         this.disk.checkStorage('storage', {
           path: '/',
           thresholdPercent: parseFloat(process.env.HEALTHCHECK_MAX_DISK),
         }),
-      async () => this.prismaHealth.pingCheck('prisma', this.prisma), // Monitorar Prisma e PostgreSQL: Há/Não há conexão
+      async () => this.prismaHealth.pingCheck('prisma', this.prisma),
       () =>
         this.memory.checkHeap(
           'memory_heap',

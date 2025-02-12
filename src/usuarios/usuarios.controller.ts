@@ -23,7 +23,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  @Permissoes('SUP', 'ADM')
+  @Permissoes('ADM')
   @Post('criar') //localhost:3000/usuarios/criar
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -34,7 +34,7 @@ export class UsuariosController {
     return this.usuariosService.criar(createUsuarioDto, usuario);
   }
 
-  @Permissoes('ADM', 'SUP')
+  @Permissoes('ADM')
   @Get('buscar-tudo') //localhost:3000/usuarios/buscar-tudo
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -56,7 +56,7 @@ export class UsuariosController {
     );
   }
 
-  @Permissoes('ADM', 'SUP')
+  @Permissoes('ADM')
   @Get('buscar-por-id/:id') //localhost:3000/usuarios/buscar-por-id/id
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -64,7 +64,7 @@ export class UsuariosController {
     return this.usuariosService.buscarPorId(id);
   }
 
-  @Permissoes('ADM', 'SUP', 'USR')
+  @Permissoes('ADM', 'USR')
   @Patch('atualizar/:id') //localhost:3000/usuarios/atualizar/id
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -76,7 +76,7 @@ export class UsuariosController {
     return this.usuariosService.atualizar(usuario, id, updateUsuarioDto);
   }
 
-  @Permissoes('ADM', 'SUP', 'DEV')
+  @Permissoes('ADM', 'DEV')
   @Get('lista-completa') //localhost:3000/usuarios/lista-completa
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -84,7 +84,7 @@ export class UsuariosController {
     return this.usuariosService.listaCompleta();
   }
 
-  @Permissoes('ADM', 'SUP')
+  @Permissoes('ADM')
   @Delete('desativar/:id') //localhost:3000/usuarios/excluir/id
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -92,7 +92,7 @@ export class UsuariosController {
     return this.usuariosService.excluir(id);
   }
 
-  @Permissoes('ADM', 'SUP')
+  @Permissoes('ADM')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('autorizar/:id')
@@ -107,7 +107,7 @@ export class UsuariosController {
     return this.usuariosService.validaUsuario(usuario.id);
   }
 
-  @Permissoes('ADM', 'SUP')
+  @Permissoes('ADM')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('buscar-novo')
