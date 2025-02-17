@@ -68,6 +68,7 @@ export class ProcedimentosService {
       }
       throw new BadRequestException('Processo não encontrado!');
     } catch (error) {
+      console.log(error);
       if (error instanceof BadRequestException)
         throw error;
       throw new InternalServerErrorException('Erro ao consultar processo!');

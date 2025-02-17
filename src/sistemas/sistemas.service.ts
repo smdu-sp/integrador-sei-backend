@@ -27,7 +27,7 @@ export class SistemasService {
       identificacao
     };
     const token = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_SECRET,
+      secret: process.env.SISTEMA_JWT_SECRET,
     });
     await this.prisma.token.create({ data: { sistema_id, token } });
     return { token_sistema: token };
@@ -97,7 +97,12 @@ export class SistemasService {
 
   async buscarPorId(id: string) {
     if (!id || id === '') throw new BadRequestException('Por favor, informe o id do sistema que deseja buscar.');
-    const sistema = await this.prisma.sistema.findUnique({ where: { id } });
+    const sistema = await this.prisma.sistema.findUnique({ 
+      where: { id },
+      include: {
+        token: true
+      }
+    });
     if (!sistema) throw new BadRequestException('Sistema não encontrado.');
     return sistema;
   }
