@@ -42,6 +42,7 @@
     "rxjs": "^7.8.1",
     "studio": "^0.13.5",
     "swagger-ui-express": "^5.0.1",
+    "undici": "^7.3.0",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {

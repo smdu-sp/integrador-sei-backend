@@ -39,4 +39,13 @@ export class ProcedimentosController {
       retornar_procedimentos_anexados
     );
   }
+
+  @IsPublic()
+  @UseGuards(SistemaJwtAuthGuard)
+  @Get('listar-unidades')
+  listarUnidades(
+    @SistemaAtual() sistema: Sistema,
+  ) {
+    return this.procedimentosService.listarUnidades(sistema);
+  }
 }

@@ -6,6 +6,7 @@ import { Permissoes } from 'src/auth/decorators/permissoes.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Usuario } from '@prisma/client';
 import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
 @Controller('sistemas')
 export class SistemasController {
@@ -18,6 +19,14 @@ export class SistemasController {
     @UsuarioAtual() usuario: Usuario
   ) {
     return this.sistemasService.criar(createSistemaDto, usuario);
+  }
+
+  @IsPublic()
+  @Get('gerar-token/:id')
+  gerarTokenSistema(
+    @Param('id') id: string
+  ) {
+    return this.sistemasService.gerarTokenSistema(id);
   }
 
   @Permissoes('ADM')

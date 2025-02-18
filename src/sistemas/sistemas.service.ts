@@ -3,7 +3,7 @@ import { CreateSistemaDto } from './dto/create-sistema.dto';
 import { UpdateSistemaDto } from './dto/update-sistema.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
-import { Usuario, $Enums } from '@prisma/client';
+import { Usuario } from '@prisma/client';
 import { SistemaPayload } from 'src/auth/models/SistemaPayload';
 import { JwtService } from '@nestjs/jwt';
 
@@ -29,7 +29,7 @@ export class SistemasService {
     const token = await this.jwtService.signAsync(payload, {
       secret: process.env.SISTEMA_JWT_SECRET,
     });
-    await this.prisma.token.create({ data: { sistema_id, token } });
+    await this.prisma.token.upsert({ where: { sistema_id }, create: { sistema_id, token }, update: { token } });
     return { token_sistema: token };
   }
 

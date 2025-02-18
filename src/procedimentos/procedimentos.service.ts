@@ -3,6 +3,7 @@ import { Sistema } from '@prisma/client';
 import { AppService } from 'src/app.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { xml2js } from 'xml-js';
+import { ProxyAgent } from 'undici';
 
 @Injectable()
 export class ProcedimentosService {
@@ -50,10 +51,13 @@ export class ProcedimentosService {
         </sei:consultarProcedimento>\n
       </soapenv:Body>\n
     </soapenv:Envelope>`;
+    const dispatcher = new ProxyAgent(process.env.PROXY_URL)
     const options = {
       method: 'POST',
+      dispatcher,
       headers: {'content-type': 'application/xml'},
-      body
+      body,
+      timeout: 20000
     };
 
     try {
@@ -73,5 +77,55 @@ export class ProcedimentosService {
         throw error;
       throw new InternalServerErrorException('Erro ao consultar processo!');
     }
+  }
+
+  async listarUnidades(
+    sistema: Sistema,
+  ) {const url = process.env.SEI_URL;
+    const body = `<?xml version="1.0" encoding="UTF-8"?>\n
+    <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:sei="http://sei.prefeitura.sp.gov.br/">\n
+      <soapenv:Header/>\n
+      <soapenv:Body>\n
+        <sei:listarUnidades>\n
+          <SiglaSistema>${sistema.sigla}</SiglaSistema>\n
+          <IdentificacaoServico>${sistema.identificacao}</IdentificacaoServico>\n
+        </sei:listarUnidades>\n
+      </soapenv:Body>\n
+    </soapenv:Envelope>`;
+    const dispatcher = new ProxyAgent(process.env.PROXY_URL)
+    const options = {
+      method: 'POST',
+      dispatcher,
+      headers: {'content-type': 'application/xml'},
+      body,
+      timeout: 20000
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const xml = await response.text();
+      const data = xml2js(xml, { compact: true });
+      if (data['env:Envelope']['env:Body']['ns1:listarUnidadesResponse']){
+        const objetoXml = data['env:Envelope']['env:Body']['ns1:listarUnidadesResponse']['parametros'];
+        const resultado = this.app.simplificaObjeto(objetoXml);
+        this.app.registraRequisicao(sistema.id, 'listarUnidades', body);
+        if ((resultado as []).length > 0){
+          const unidades = resultado as any[];
+          const filtradoSmul = unidades.filter((unidade) => {
+            if (unidade['Sigla'] && unidade['Sigla'].includes('SMUL'))
+              return unidade;
+          })
+          return filtradoSmul;
+        }
+        return resultado;
+      }
+      throw new BadRequestException('Processo não encontrado!');
+    } catch (error) {
+      console.log(error);
+      if (error instanceof BadRequestException)
+        throw error;
+      throw new InternalServerErrorException('Erro ao consultar processo!');
+    }
+
   }
 }
